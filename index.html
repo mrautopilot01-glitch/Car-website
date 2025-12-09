@@ -5,54 +5,48 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LUXE AUTO | Ultimate Driving Machines</title>
     
-    <!-- Load Tailwind CSS -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Load React & ReactDOM -->
+    <!-- React & ReactDOM -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     
-    <!-- Load Babel for JSX support -->
+    <!-- Babel -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
-    <!-- Fonts -->
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700;900&display=swap" rel="stylesheet">
 
     <style>
         body {
             font-family: 'Montserrat', sans-serif;
-            background-color: #0a0a0a;
-            overflow: hidden; /* Prevent scroll */
-        }
-        
-        /* Custom Animations */
-        @keyframes fadeSlideUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .animate-fade-up {
-            animation: fadeSlideUp 0.6s ease-out forwards;
+            background-color: #050505;
+            overflow-x: hidden;
+            color: white;
         }
 
-        /* Hide scrollbar for sidebar */
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-
-        /* Glassmorphism Utilities */
+        /* Glassmorphism */
         .glass-panel {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        .glass-panel:hover {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(255, 255, 255, 0.2);
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .animate-slide-up {
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
     </style>
 </head>
@@ -62,264 +56,182 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        // --- ICONS (Inline SVGs to replace Lucide dependency) ---
-        const Icon = ({ path, className }) => (
-            <svg 
-                xmlns="http://www.w3.org/2000/svg" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                className={className}
-            >
-                {path}
-            </svg>
-        );
-
-        const Icons = {
-            Menu: <path d="M4 6h16M4 12h16M4 18h16" />,
-            Search: <path d="m21 21-4.3-4.3M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z" />,
-            MapPin: <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z M12 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />,
-            ChevronLeft: <path d="m15 18-6-6 6-6" />,
-            ChevronRight: <path d="m9 18 6-6-6-6" />,
-            Wind: <path d="M12.8 19.6A2 2 0 1 0 14 16H2M17.5 8a2.5 2.5 0 1 1 2 4H2M9.8 4.4A2 2 0 1 1 11 8H2" />,
-            Zap: <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8Z" />,
-            Gauge: <path d="m12 14 4-4M3.34 19a10 10 0 1 1 17.32 0" />,
-            ArrowRight: <path d="M5 12h14M12 5l7 7-7 7" />
-        };
-
-        // --- DATA ---
+        // --- ROBUST DATA WITH WORKING IMAGES ---
+        // Using Wikimedia/Public URLs that allow external linking
         const CAR_DATA = [
             {
                 id: 1,
                 brand: "PORSCHE",
-                model: "CAYENNE GT",
-                tagline: "Unleash the Beast.",
-                description: "The Turbo GT is designed for maximum longitudinal and lateral dynamics. Its 4.0-litre twin-turbo V8 brings 650 hp to the asphalt.",
-                image: "https://files.porsche.com/filestore/image/multimedia/none/cayenne-turbo-gt-model-image/model/093e9664-d621-11eb-80d9-005056bbdc38/porsche-model.png",
-                colorAccent: "from-orange-500 to-red-600",
-                specs: { speed: "305 km/h", power: "650 hp", accel: "3.3 s" }
+                model: "911 GT3 RS",
+                tagline: "Purist Performance.",
+                description: "The new 911 GT3 RS is designed for maximum performance. It is a precision tool for the track, optimized for aerodynamics.",
+                // Reliable Wikimedia URL
+                image: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/Porsche_911_GT3_RS_Weissach_Package_%28992%29_IMG_6480.jpg/1280px-Porsche_911_GT3_RS_Weissach_Package_%28992%29_IMG_6480.jpg",
+                // Fallback if image fails
+                fallback: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Porsche_911_GT3_RS_%28991%29_front.jpg/1200px-Porsche_911_GT3_RS_%28991%29_front.jpg",
+                colorAccent: "from-red-600 to-orange-600",
+                specs: { speed: "296 km/h", power: "518 hp", accel: "3.0 s" }
             },
             {
                 id: 2,
-                brand: "FERRARI",
-                model: "296 GTB",
-                tagline: "Defining Fun to Drive.",
-                description: "The 296 GTB represents a revolution for Maranello. The V6 hybrid architecture allows for pure adrenaline and sustainability.",
-                image: "https://pngimg.com/d/ferrari_PNG102808.png",
-                colorAccent: "from-red-600 to-red-900",
-                specs: { speed: "330 km/h", power: "830 cv", accel: "2.9 s" }
+                brand: "LAMBORGHINI",
+                model: "REVUELTO",
+                tagline: "From Now On.",
+                description: "The first High Performance Electrified Vehicle. A V12 engine coupled with three electric motors for a total of 1015 CV.",
+                image: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/Lamborghini_Revuelto_IMG_7584.jpg/1280px-Lamborghini_Revuelto_IMG_7584.jpg",
+                colorAccent: "from-orange-500 to-yellow-500",
+                specs: { speed: ">350 km/h", power: "1015 cv", accel: "2.5 s" }
             },
             {
                 id: 3,
                 brand: "MCLAREN",
-                model: "720S SPIDER",
-                tagline: "Raise the Limits.",
-                description: "A light and strong supercar shaped by the forces of nature. Honed by the elements. Poised for attack.",
-                image: "https://mclaren.scene7.com/is/image/mclaren/720S-Spider-hero:crop-16x9?wid=1920&hei=1080",
-                colorAccent: "from-cyan-400 to-blue-600",
-                specs: { speed: "341 km/h", power: "710 bhp", accel: "2.8 s" }
+                model: "765LT",
+                tagline: "Fearless Engineering.",
+                description: "Longtail. The legend returns. Lighter, more powerful, and with even higher levels of performance on both road and track.",
+                image: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/McLaren_765LT_IMG_4953.jpg/1280px-McLaren_765LT_IMG_4953.jpg",
+                colorAccent: "from-blue-600 to-cyan-500",
+                specs: { speed: "330 km/h", power: "755 bhp", accel: "2.8 s" }
             }
         ];
 
-        const UPCOMING_CARS = [
-            { name: "Mission X", brand: "Porsche", image: "https://newsroom.porsche.com/.imaging/mte/porsche-templating-theme/image_1290x726/dam/pnr/2023/products/mission-x/gallery/b-P23_0186_a3_rgb.jpg/jcr:content/b-P23_0186_a3_rgb.jpg" },
-            { name: "Revuelto", brand: "Lamborghini", image: "https://www.lamborghini.com/sites/it-en/files/DAM/lamborghini/facelift_2019/homepage/families-gallery/2023/revuelto/revuelto_m.png" },
-        ];
-
-        // --- COMPONENTS ---
+        // --- ICONS ---
+        const Icon = ({ d, className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <path d={d} />
+            </svg>
+        );
 
         const Navbar = () => (
-            <nav className="absolute top-0 w-full flex justify-between items-center p-6 z-50 text-white mix-blend-difference">
-                <div className="flex items-center gap-4 group cursor-pointer">
-                    <Icon path={Icons.Menu} className="w-6 h-6 group-hover:text-gray-300 transition-colors" />
-                    <span className="font-black tracking-widest text-xl">LUXE AUTO</span>
+            <nav className="fixed top-0 w-full flex justify-between items-center p-6 z-50 bg-gradient-to-b from-black/80 to-transparent">
+                <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-black font-black">L</div>
+                    <span className="font-bold tracking-[0.2em] text-lg">LUXE AUTO</span>
                 </div>
-                <div className="hidden md:flex gap-10 text-xs font-bold tracking-widest">
-                    {['MODELS', 'RACING', 'UNIVERSE', 'SHOP'].map((item) => (
-                        <a key={item} href="#" className="relative group overflow-hidden pb-1">
-                            <span className="relative z-10">{item}</span>
-                            <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-white transition-all duration-300 group-hover:w-full"></span>
-                        </a>
-                    ))}
+                <div className="hidden md:flex gap-8 text-xs font-bold tracking-widest text-gray-300">
+                    <a href="#" className="hover:text-white transition-colors">MODELS</a>
+                    <a href="#" className="hover:text-white transition-colors">BESPOKE</a>
+                    <a href="#" className="hover:text-white transition-colors">EVENTS</a>
                 </div>
-                <div className="flex items-center gap-6">
-                    <div className="flex items-center gap-2 text-[10px] font-bold tracking-widest cursor-pointer hover:opacity-80 transition-opacity">
-                        <Icon path={Icons.MapPin} className="w-4 h-4" />
-                        FIND DEALER
-                    </div>
-                    <Icon path={Icons.Search} className="w-5 h-5 cursor-pointer hover:scale-110 transition-transform" />
+                <div className="flex items-center gap-4 text-xs font-bold">
+                    <span className="hidden md:inline hover:text-gray-300 cursor-pointer">FIND DEALER</span>
+                    <Icon d="M21 21l-4.35-4.35M19 11a8 8 0 1 1-16 0 8 8 0 0 1 16 0z" className="w-5 h-5" />
                 </div>
             </nav>
         );
 
-        const SpecCard = ({ iconPath, label, value, delay }) => (
-            <div 
-                className="glass-panel flex flex-col items-center justify-center p-4 rounded-xl opacity-0 transform translate-y-4"
-                style={{ animation: `fadeSlideUp 0.6s ease-out ${delay}s forwards` }}
-            >
-                <div className="text-gray-400 mb-2">
-                    <Icon path={iconPath} className="w-6 h-6" />
-                </div>
-                <span className="text-2xl font-black text-white tracking-tighter">{value}</span>
-                <span className="text-[10px] uppercase tracking-widest text-gray-500 mt-1">{label}</span>
-            </div>
-        );
-
         const App = () => {
-            const [activeIndex, setActiveIndex] = useState(0);
-            const [isAnimating, setIsAnimating] = useState(false);
-            const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-            const currentCar = CAR_DATA[activeIndex];
-
-            // Parallax Logic
-            useEffect(() => {
-                const handleMouseMove = (e) => {
-                    const x = (e.clientX / window.innerWidth - 0.5) * 30;
-                    const y = (e.clientY / window.innerHeight - 0.5) * 30;
-                    setMousePos({ x, y });
-                };
-                window.addEventListener('mousemove', handleMouseMove);
-                return () => window.removeEventListener('mousemove', handleMouseMove);
-            }, []);
+            const [index, setIndex] = useState(0);
+            const [animating, setAnimating] = useState(false);
+            const car = CAR_DATA[index];
 
             const changeCar = (newIndex) => {
-                if (isAnimating || newIndex === activeIndex) return;
-                setIsAnimating(true);
+                if (animating || newIndex === index) return;
+                setAnimating(true);
                 setTimeout(() => {
-                    setActiveIndex(newIndex);
-                    setIsAnimating(false);
-                }, 500);
+                    setIndex(newIndex);
+                    setAnimating(false);
+                }, 400); // Wait for exit animation
             };
 
-            const handleNext = () => changeCar((activeIndex + 1) % CAR_DATA.length);
-            const handlePrev = () => changeCar((activeIndex - 1 + CAR_DATA.length) % CAR_DATA.length);
+            const next = () => changeCar((index + 1) % CAR_DATA.length);
+            const prev = () => changeCar((index - 1 + CAR_DATA.length) % CAR_DATA.length);
+
+            // Handle Image Error (Fallback)
+            const handleImgError = (e) => {
+                e.target.src = "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/1024px-No_image_available.svg.png"; 
+            };
 
             return (
-                <div className="relative w-full h-screen bg-[#0a0a0a] text-white overflow-hidden">
+                <div className="relative w-full h-screen overflow-hidden flex flex-col md:flex-row">
                     
-                    {/* Dynamic Background Glow */}
-                    <div className={`absolute top-[-20%] left-[-10%] w-[60%] h-[80%] rounded-full bg-gradient-to-r ${currentCar.colorAccent} opacity-20 blur-[150px] transition-all duration-1000`} />
-                    <div className={`absolute bottom-[-20%] right-[-10%] w-[40%] h-[60%] rounded-full bg-gradient-to-l ${currentCar.colorAccent} opacity-10 blur-[120px] transition-all duration-1000`} />
+                    {/* Dynamic Background */}
+                    <div className={`absolute inset-0 bg-gradient-to-br ${car.colorAccent} opacity-20 blur-[100px] transition-all duration-1000 ease-in-out`}></div>
+                    <div className="absolute inset-0 bg-black/40 z-0"></div>
 
                     <Navbar />
 
-                    <div className="flex h-full w-full">
-                        
-                        {/* Sidebar Left: Thumbnails */}
-                        <div className="hidden md:flex flex-col justify-center gap-8 w-32 pl-8 z-20">
-                            {CAR_DATA.map((car, idx) => (
-                                <div 
-                                    key={car.id} 
-                                    onClick={() => changeCar(idx)}
-                                    className={`group cursor-pointer relative transition-all duration-500 ${idx === activeIndex ? 'opacity-100 scale-110' : 'opacity-40 hover:opacity-100'}`}
-                                >
-                                    <div className={`absolute -left-6 top-1/2 -translate-y-1/2 w-1 h-12 bg-white rounded-r transition-all duration-300 ${idx === activeIndex ? 'h-12 opacity-100' : 'h-0 opacity-0'}`}></div>
-                                    <img src={car.image} className="w-full transform -scale-x-100 drop-shadow-lg" alt="thumb" />
-                                </div>
-                            ))}
-                        </div>
-
-                        {/* Center Stage */}
-                        <div className="flex-1 relative flex items-center justify-center perspective-1000">
-                            
-                            {/* Giant Background Text */}
-                            <h1 
-                                className="absolute text-[18vw] font-black text-white/5 whitespace-nowrap tracking-tighter leading-none select-none transition-transform duration-100 ease-out pointer-events-none"
-                                style={{ transform: `translate(${-mousePos.x}px, ${-mousePos.y}px)` }}
+                    {/* Left Sidebar (Thumbnails) */}
+                    <div className="hidden md:flex flex-col justify-center w-24 h-full z-20 border-r border-white/10 bg-black/20 backdrop-blur-sm">
+                        {CAR_DATA.map((c, i) => (
+                            <div 
+                                key={c.id} 
+                                onClick={() => changeCar(i)}
+                                className={`h-24 flex items-center justify-center cursor-pointer transition-all duration-300 ${i === index ? 'bg-white/10 border-l-4 border-white' : 'opacity-50 hover:opacity-100'}`}
                             >
-                                {currentCar.brand}
-                            </h1>
-
-                            {/* Main Car Image */}
-                            <div className="relative w-[85%] max-w-[1100px] z-10 transition-all duration-500 ease-in-out">
-                                <img 
-                                    src={currentCar.image} 
-                                    alt={currentCar.model}
-                                    className={`w-full h-auto object-contain drop-shadow-[0_35px_60px_rgba(0,0,0,0.6)] transition-all duration-500 ${isAnimating ? 'opacity-0 translate-x-10 blur-sm' : 'opacity-100 translate-x-0 blur-0'}`}
-                                    style={{ transform: `translate(${mousePos.x}px, ${mousePos.y}px) scale(1)` }}
-                                />
+                                <span className="rotate-90 text-[10px] font-bold tracking-widest whitespace-nowrap">{c.brand}</span>
                             </div>
+                        ))}
+                    </div>
 
-                            {/* Model Name Overlay */}
-                            <div className="absolute top-[22%] left-[10%] mix-blend-overlay z-0 pointer-events-none">
-                                <h2 className={`text-6xl md:text-9xl font-black uppercase tracking-tighter text-white/20 transition-all duration-500 ${isAnimating ? 'translate-y-10 opacity-0' : 'translate-y-0 opacity-100'}`}>
-                                    {currentCar.model}
-                                </h2>
-                            </div>
+                    {/* Main Content */}
+                    <div className="flex-1 relative flex items-center justify-center p-6">
+                        
+                        {/* Background Typography */}
+                        <h1 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[15vw] font-black text-white/5 whitespace-nowrap select-none pointer-events-none transition-all duration-500">
+                            {car.brand}
+                        </h1>
 
-                            {/* Navigation Arrows */}
-                            <div className="absolute bottom-10 md:bottom-20 flex gap-6 z-30">
-                                <button onClick={handlePrev} className="p-4 rounded-full glass-panel hover:bg-white hover:text-black transition-all group">
-                                    <Icon path={Icons.ChevronLeft} className="w-6 h-6" />
-                                </button>
-                                <button onClick={handleNext} className="p-4 rounded-full glass-panel hover:bg-white hover:text-black transition-all group">
-                                    <Icon path={Icons.ChevronRight} className="w-6 h-6" />
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Right Sidebar: Details */}
-                        <div className="hidden lg:flex flex-col w-96 h-full pt-32 pr-10 pb-10 z-20 justify-between bg-gradient-to-l from-black/80 to-transparent">
+                        {/* Content Container */}
+                        <div className={`relative z-10 w-full max-w-6xl flex flex-col md:flex-row items-center gap-12 transition-opacity duration-500 ${animating ? 'opacity-0 translate-y-10' : 'opacity-100 translate-y-0'}`}>
                             
-                            {/* Text Content */}
-                            <div className={`transition-all duration-500 ${isAnimating ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'}`}>
-                                <div className="h-1 w-12 bg-white mb-6"></div>
-                                <h3 className="text-4xl font-bold mb-4 leading-none">{currentCar.tagline}</h3>
-                                <p className="text-gray-400 text-sm leading-relaxed mb-8">
-                                    {currentCar.description}
-                                </p>
-                                <button className="flex items-center gap-3 text-xs font-bold tracking-[0.2em] border-b border-white pb-1 hover:text-gray-300 transition-colors">
-                                    CONFIGURE VEHICLE <Icon path={Icons.ArrowRight} className="w-4 h-4" />
-                                </button>
-                            </div>
-
-                            {/* Specs Grid */}
-                            <div className="grid grid-cols-2 gap-4 mt-8">
-                                <SpecCard iconPath={Icons.Gauge} label="0-100 km/h" value={currentCar.specs.accel} delay={0.1} />
-                                <SpecCard iconPath={Icons.Wind} label="Top Speed" value={currentCar.specs.speed} delay={0.2} />
-                            </div>
-
-                            {/* Upcoming List */}
-                            <div className="mt-auto pt-8 border-t border-white/10">
-                                <h4 className="text-[10px] font-bold text-gray-500 mb-4 tracking-widest uppercase">Upcoming Releases</h4>
-                                <div className="flex flex-col gap-3">
-                                    {UPCOMING_CARS.map((car, i) => (
-                                        <div key={i} className="flex items-center gap-3 p-2 rounded hover:bg-white/5 cursor-pointer transition-colors group">
-                                            <div className="w-16 h-10 rounded overflow-hidden">
-                                                <img src={car.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt={car.name} />
-                                            </div>
-                                            <div>
-                                                <div className="text-white text-sm font-bold">{car.name}</div>
-                                                <div className="text-[10px] text-gray-500">{car.brand}</div>
-                                            </div>
-                                        </div>
-                                    ))}
+                            {/* Car Image */}
+                            <div className="w-full md:w-3/5 order-1 md:order-2">
+                                <div className="aspect-[16/9] w-full relative">
+                                    <img 
+                                        src={car.image} 
+                                        alt={car.model} 
+                                        onError={handleImgError}
+                                        className="w-full h-full object-cover rounded-lg shadow-2xl ring-1 ring-white/10"
+                                    />
                                 </div>
                             </div>
+
+                            {/* Text Info */}
+                            <div className="w-full md:w-2/5 order-2 md:order-1 text-left space-y-6">
+                                <div>
+                                    <h2 className="text-4xl md:text-6xl font-black uppercase leading-tight tracking-tighter">{car.model}</h2>
+                                    <div className="h-1 w-20 bg-white mt-4 mb-6"></div>
+                                </div>
+                                
+                                <p className="text-gray-400 text-sm leading-relaxed max-w-md">
+                                    {car.description}
+                                </p>
+
+                                {/* Specs Grid */}
+                                <div className="grid grid-cols-3 gap-4 border-t border-white/10 pt-6">
+                                    <div>
+                                        <div className="text-xl font-bold">{car.specs.accel}</div>
+                                        <div className="text-[10px] text-gray-500 uppercase tracking-wider">0-100 km/h</div>
+                                    </div>
+                                    <div>
+                                        <div className="text-xl font-bold">{car.specs.speed}</div>
+                                        <div className="text-[10px] text-gray-500 uppercase tracking-wider">Top Speed</div>
+                                    </div>
+                                    <div>
+                                        <div className="text-xl font-bold">{car.specs.power}</div>
+                                        <div className="text-[10px] text-gray-500 uppercase tracking-wider">Power</div>
+                                    </div>
+                                </div>
+
+                                <button className="mt-4 px-8 py-3 bg-white text-black text-xs font-bold tracking-widest hover:bg-gray-200 transition-colors uppercase">
+                                    Configure Vehicle
+                                </button>
+                            </div>
+
                         </div>
                     </div>
-                    
-                    {/* Mobile Overlay (Only Visible on Small Screens) */}
-                    <div className="md:hidden absolute bottom-0 w-full glass-panel border-t-0 p-6 rounded-t-3xl z-40">
-                         <h2 className="text-3xl font-black mb-1">{currentCar.model}</h2>
-                         <p className="text-gray-400 text-xs mb-4">{currentCar.brand}</p>
-                         <div className="flex justify-between pt-4 border-t border-white/10">
-                             <div className="text-center">
-                                 <div className="font-bold text-xl">{currentCar.specs.accel}</div>
-                                 <div className="text-[10px] text-gray-500">ACCEL</div>
-                             </div>
-                             <div className="text-center">
-                                 <div className="font-bold text-xl">{currentCar.specs.speed}</div>
-                                 <div className="text-[10px] text-gray-500">SPEED</div>
-                             </div>
-                             <div className="text-center">
-                                 <div className="font-bold text-xl">{currentCar.specs.power}</div>
-                                 <div className="text-[10px] text-gray-500">POWER</div>
-                             </div>
-                         </div>
+
+                    {/* Bottom Controls */}
+                    <div className="absolute bottom-0 left-0 w-full p-8 flex justify-between items-end z-20 pointer-events-none">
+                        <div className="text-[10px] text-gray-500 font-mono">0{index + 1} / 0{CAR_DATA.length}</div>
+                        <div className="flex gap-4 pointer-events-auto">
+                            <button onClick={prev} className="w-12 h-12 rounded-full glass-panel flex items-center justify-center hover:bg-white hover:text-black transition-all">
+                                <Icon d="M15 18l-6-6 6-6" className="w-5 h-5" />
+                            </button>
+                            <button onClick={next} className="w-12 h-12 rounded-full glass-panel flex items-center justify-center hover:bg-white hover:text-black transition-all">
+                                <Icon d="M9 18l6-6-6-6" className="w-5 h-5" />
+                            </button>
+                        </div>
                     </div>
 
                 </div>
@@ -331,4 +243,5 @@
     </script>
 </body>
 </html>
+
 
