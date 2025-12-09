@@ -1,214 +1,348 @@
-/* Global Styles: Premium fonts, resets, and base colors */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Poppins', sans-serif;
+import React, { useState, useEffect } from 'react';
+import { 
+  ChevronRight, 
+  ChevronLeft, 
+  Wind, 
+  Zap, 
+  Gauge, 
+  Menu, 
+  Search, 
+  MapPin, 
+  ShoppingBag,
+  ArrowRight,
+  Play
+} from 'lucide-react';
+
+// --- Assets & Data ---
+
+const CAR_DATA = [
+  {
+    id: 1,
+    brand: "PORSCHE",
+    model: "CAYENNE GT",
+    year: "2025",
+    tagline: "Unleash the Beast.",
+    description: "The Turbo GT is designed for maximum longitudinal and lateral dynamics. Its 4.0-litre twin-turbo V8 brings 650 hp to the asphalt.",
+    image: "https://files.porsche.com/filestore/image/multimedia/none/cayenne-turbo-gt-model-image/model/093e9664-d621-11eb-80d9-005056bbdc38/porsche-model.png",
+    colorAccent: "from-orange-500 to-red-600",
+    specs: {
+      speed: "305 km/h",
+      power: "650 hp",
+      accel: "3.3 s",
+      engine: "4.0L V8 Twin-Turbo"
+    }
+  },
+  {
+    id: 2,
+    brand: "FERRARI",
+    model: "296 GTB",
+    year: "2024",
+    tagline: "Defining Fun to Drive.",
+    description: "The 296 GTB, an evolution of Ferrari's mid-rear-engined two-seater sports berlinetta concept, represents a revolution for the Maranello-based company.",
+    image: "https://api.ferrari.com/cms/network/medium/ferrari-296-gtb-asset-share", // Placeholder fallback handled in UI
+    imageFallback: "https://pngimg.com/d/ferrari_PNG102808.png", 
+    colorAccent: "from-red-600 to-red-900",
+    specs: {
+      speed: "330 km/h",
+      power: "830 cv",
+      accel: "2.9 s",
+      engine: "V6 Hybrid"
+    }
+  },
+  {
+    id: 3,
+    brand: "MCLAREN",
+    model: "720S SPIDER",
+    year: "2024",
+    tagline: "Raise the Limits.",
+    description: "A light and strong supercar shaped by the forces of nature. Honed by the elements. Poised for attack. The 720S is a force of nature.",
+    image: "https://mclaren.scene7.com/is/image/mclaren/720S-Spider-hero:crop-16x9?wid=1920&hei=1080",
+    imageFallback: "https://pngimg.com/d/mclaren_PNG64.png",
+    colorAccent: "from-cyan-400 to-blue-600",
+    specs: {
+      speed: "341 km/h",
+      power: "710 bhp",
+      accel: "2.8 s",
+      engine: "4.0L V8"
+    }
+  }
+];
+
+const UPCOMING_CARS = [
+  { name: "Mission X", brand: "Porsche", release: "2026", image: "https://newsroom.porsche.com/.imaging/mte/porsche-templating-theme/image_1290x726/dam/pnr/2023/products/mission-x/gallery/b-P23_0186_a3_rgb.jpg/jcr:content/b-P23_0186_a3_rgb.jpg" },
+  { name: "Revuelto", brand: "Lamborghini", release: "Late 2025", image: "https://www.lamborghini.com/sites/it-en/files/DAM/lamborghini/facelift_2019/homepage/families-gallery/2023/revuelto/revuelto_m.png" },
+];
+
+// --- Components ---
+
+const Navbar = () => (
+  <nav className="absolute top-0 w-full flex justify-between items-center p-6 z-50 text-white mix-blend-difference">
+    <div className="flex items-center gap-4">
+      <Menu className="w-6 h-6 cursor-pointer hover:text-gray-300 transition-colors" />
+      <span className="font-bold tracking-widest text-lg">LUXE AUTO</span>
+    </div>
+    <div className="hidden md:flex gap-8 text-sm font-medium tracking-wide">
+      {['MODELS', 'RACING', 'UNIVERSE', 'SHOP'].map((item) => (
+        <a key={item} href="#" className="hover:text-gray-300 relative group">
+          {item}
+          <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-white transition-all group-hover:w-full"></span>
+        </a>
+      ))}
+    </div>
+    <div className="flex items-center gap-6">
+      <div className="flex items-center gap-2 text-xs font-semibold cursor-pointer hover:opacity-80">
+        <MapPin className="w-4 h-4" />
+        FIND DEALER
+      </div>
+      <Search className="w-5 h-5 cursor-pointer hover:scale-110 transition-transform" />
+    </div>
+  </nav>
+);
+
+const SpecCard = ({ icon: Icon, label, value, delay }) => (
+  <div 
+    className={`flex flex-col items-center justify-center p-4 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl hover:bg-white/10 transition-all duration-500 transform translate-y-0 opacity-100`}
+    style={{ animation: `fadeInUp 0.6s ease-out ${delay}s backwards` }}
+  >
+    <Icon className="w-6 h-6 text-gray-300 mb-2" />
+    <span className="text-2xl font-bold text-white tracking-tighter">{value}</span>
+    <span className="text-[10px] uppercase tracking-widest text-gray-400 mt-1">{label}</span>
+  </div>
+);
+
+const UpcomingCard = ({ car }) => (
+  <div className="group relative flex items-center gap-4 p-3 pr-6 bg-black/40 backdrop-blur-sm border-l-2 border-transparent hover:border-white transition-all cursor-pointer overflow-hidden rounded-r-lg">
+    <div className="w-16 h-10 rounded overflow-hidden relative">
+        <img src={car.image} alt={car.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+    </div>
+    <div className="flex flex-col">
+      <span className="text-xs text-gray-400">{car.brand}</span>
+      <span className="text-sm font-bold text-white group-hover:text-blue-400 transition-colors">{car.name}</span>
+    </div>
+    <div className="absolute right-2 opacity-0 group-hover:opacity-100 transform translate-x-2 group-hover:translate-x-0 transition-all">
+        <ArrowRight className="w-4 h-4 text-white" />
+    </div>
+  </div>
+);
+
+export default function LuxuryCarShowcase() {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+
+  const currentCar = CAR_DATA[activeIndex];
+
+  const handleNext = () => {
+    if (isAnimating) return;
+    setIsAnimating(true);
+    setTimeout(() => {
+      setActiveIndex((prev) => (prev + 1) % CAR_DATA.length);
+      setIsAnimating(false);
+    }, 400); // Wait for exit animation
+  };
+
+  const handlePrev = () => {
+    if (isAnimating) return;
+    setIsAnimating(true);
+    setTimeout(() => {
+      setActiveIndex((prev) => (prev - 1 + CAR_DATA.length) % CAR_DATA.length);
+      setIsAnimating(false);
+    }, 400);
+  };
+
+  const handleSelect = (index) => {
+    if (index === activeIndex || isAnimating) return;
+    setIsAnimating(true);
+    setTimeout(() => {
+      setActiveIndex(index);
+      setIsAnimating(false);
+    }, 400);
+  };
+
+  // Parallax Effect Calculation
+  const handleMouseMove = (e) => {
+    const { clientX, clientY } = e;
+    const x = (clientX / window.innerWidth - 0.5) * 20; // Move range -10 to 10px
+    const y = (clientY / window.innerHeight - 0.5) * 20;
+    setMousePos({ x, y });
+  };
+
+  useEffect(() => {
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
+  return (
+    <div className="relative w-full h-screen bg-[#0a0a0a] overflow-hidden font-sans select-none">
+      
+      {/* Background Gradient Spotlights */}
+      <div 
+        className={`absolute top-[-20%] left-[-10%] w-[50%] h-[80%] rounded-full bg-gradient-to-r ${currentCar.colorAccent} opacity-20 blur-[150px] transition-all duration-1000 ease-in-out`} 
+      />
+      <div 
+        className={`absolute bottom-[-20%] right-[-10%] w-[40%] h-[60%] rounded-full bg-gradient-to-l ${currentCar.colorAccent} opacity-10 blur-[120px] transition-all duration-1000 ease-in-out`} 
+      />
+
+      <Navbar />
+
+      {/* Main Content Grid */}
+      <div className="relative w-full h-full flex flex-col md:flex-row">
+        
+        {/* Left Sidebar: Car Selector */}
+        <div className="hidden md:flex flex-col justify-center gap-6 w-24 h-full pl-6 z-20">
+          {CAR_DATA.map((car, idx) => (
+            <div 
+              key={car.id} 
+              onClick={() => handleSelect(idx)}
+              className={`relative group cursor-pointer transition-all duration-300 ${idx === activeIndex ? 'opacity-100 scale-110' : 'opacity-40 hover:opacity-70'}`}
+            >
+              {/* Vertical line indicator */}
+              <div className={`absolute -left-4 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-r-lg transition-all duration-300 ${idx === activeIndex ? 'opacity-100' : 'opacity-0'}`} />
+              
+              <img 
+                src={car.imageFallback || car.image} 
+                alt="thumbnail" 
+                className="w-16 h-auto object-contain transform -scale-x-100" // Flip thumbnail to face right
+              />
+            </div>
+          ))}
+          <div className="absolute bottom-10 left-6 text-white/30 text-xs font-mono rotate-180" style={{ writingMode: 'vertical-rl' }}>
+            SCROLL TO EXPLORE
+          </div>
+        </div>
+
+        {/* Center Stage */}
+        <div className="flex-1 relative flex items-center justify-center">
+            
+            {/* Massive Background Typography */}
+            <h1 
+                className="absolute text-[15vw] font-black text-white/5 whitespace-nowrap tracking-tighter leading-none select-none transition-all duration-700 ease-out transform"
+                style={{ 
+                    transform: `translate(${mousePos.x * -1}px, ${mousePos.y * -1}px) scale(1.05)`,
+                    opacity: isAnimating ? 0 : 0.05
+                }}
+            >
+                {currentCar.brand}
+            </h1>
+
+            {/* Sub-Typography Model Name */}
+            <h2 
+                className="absolute top-[25%] md:top-[20%] text-4xl md:text-8xl font-bold text-white/10 uppercase tracking-[0.2em] transition-all duration-700 delay-100"
+                style={{ 
+                    transform: `translateX(${isAnimating ? '-50px' : '0'})`,
+                    opacity: isAnimating ? 0 : 0.2
+                }}
+            >
+                {currentCar.model}
+            </h2>
+
+            {/* The Main Car Image */}
+            <div className="relative w-[90%] md:w-[75%] max-w-[1200px] z-10 perspective-1000">
+                <img 
+                    src={currentCar.image} 
+                    alt={currentCar.model} 
+                    className={`w-full h-auto object-contain drop-shadow-2xl transition-all duration-700 ease-out transform ${isAnimating ? 'opacity-0 translate-x-20 scale-95 blur-sm' : 'opacity-100 translate-x-0 scale-100 blur-0'}`}
+                    style={{ 
+                        transform: `translate(${mousePos.x}px, ${mousePos.y}px) rotateY(${mousePos.x * 0.05}deg)`,
+                        filter: 'drop-shadow(0 20px 50px rgba(0,0,0,0.5))'
+                    }}
+                />
+                
+                {/* Interactive Hotspot (Example) */}
+                {!isAnimating && (
+                   <div className="absolute top-[40%] right-[30%] animate-pulse cursor-pointer group">
+                      <div className="w-4 h-4 bg-white rounded-full shadow-[0_0_15px_rgba(255,255,255,0.8)] relative z-10"></div>
+                      <div className="absolute top-1/2 left-6 -translate-y-1/2 w-32 bg-black/60 backdrop-blur-md text-white text-xs p-2 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none border border-white/20">
+                          Carbon Ceramic Brakes
+                      </div>
+                   </div>
+                )}
+            </div>
+
+            {/* Controls */}
+            <div className="absolute bottom-32 right-10 flex gap-4 z-30">
+                <button onClick={handlePrev} className="p-3 rounded-full border border-white/20 text-white hover:bg-white hover:text-black transition-all">
+                    <ChevronLeft className="w-6 h-6" />
+                </button>
+                <button onClick={handleNext} className="p-3 rounded-full border border-white/20 text-white hover:bg-white hover:text-black transition-all">
+                    <ChevronRight className="w-6 h-6" />
+                </button>
+            </div>
+            
+            {/* Slide Counter */}
+            <div className="absolute bottom-32 left-10 md:left-20 text-white font-mono text-6xl md:text-8xl opacity-20 font-bold">
+                0{activeIndex + 1}
+            </div>
+        </div>
+
+        {/* Right Sidebar: Upcoming & Context */}
+        <div className="hidden lg:flex flex-col w-80 h-full pt-24 pr-8 z-20 justify-between pb-10">
+            
+            {/* Top Section: Description */}
+            <div className={`transition-all duration-500 ${isAnimating ? 'opacity-0 translate-y-5' : 'opacity-100 translate-y-0'}`}>
+                <div className="h-1 w-12 bg-white mb-6"></div>
+                <h3 className="text-3xl text-white font-bold mb-2 leading-tight">{currentCar.tagline}</h3>
+                <p className="text-gray-400 text-sm leading-relaxed mb-6">
+                    {currentCar.description}
+                </p>
+                <button className="flex items-center gap-3 text-white text-xs font-bold tracking-widest hover:text-gray-300 group">
+                    CONFIGURE <span className="group-hover:translate-x-2 transition-transform">→</span>
+                </button>
+            </div>
+
+            {/* Middle: Specs Grid */}
+            <div className="grid grid-cols-2 gap-3 mt-8">
+                <SpecCard icon={Gauge} label="0-100 km/h" value={currentCar.specs.accel} delay={0.1} />
+                <SpecCard icon={Wind} label="Top Speed" value={currentCar.specs.speed} delay={0.2} />
+                <SpecCard icon={Zap} label="Power" value={currentCar.specs.power} delay={0.3} />
+            </div>
+
+            {/* Bottom: Upcoming Cars */}
+            <div className="mt-auto pt-8 border-t border-white/10">
+                <h4 className="text-xs font-bold text-gray-500 mb-4 tracking-widest uppercase">Upcoming Releases</h4>
+                <div className="flex flex-col gap-3">
+                    {UPCOMING_CARS.map((car, i) => (
+                        <UpcomingCard key={i} car={car} />
+                    ))}
+                </div>
+            </div>
+        </div>
+      </div>
+
+      {/* Mobile Specs View (Only visible on small screens) */}
+      <div className="md:hidden absolute bottom-0 w-full bg-black/80 backdrop-blur-xl p-6 rounded-t-3xl border-t border-white/10 z-40">
+          <div className="flex justify-between items-end mb-4">
+              <div>
+                  <h2 className="text-2xl font-bold text-white">{currentCar.model}</h2>
+                  <p className="text-xs text-gray-400">{currentCar.brand}</p>
+              </div>
+              <button className="bg-white text-black px-4 py-2 rounded-full text-xs font-bold">
+                  DETAILS
+              </button>
+          </div>
+          <div className="flex justify-between border-t border-white/10 pt-4">
+              <div className="text-center">
+                  <p className="text-white font-bold">{currentCar.specs.accel}</p>
+                  <p className="text-[10px] text-gray-500">0-100</p>
+              </div>
+              <div className="text-center">
+                  <p className="text-white font-bold">{currentCar.specs.speed}</p>
+                  <p className="text-[10px] text-gray-500">MAX</p>
+              </div>
+              <div className="text-center">
+                  <p className="text-white font-bold">{currentCar.specs.power}</p>
+                  <p className="text-[10px] text-gray-500">POWER</p>
+              </div>
+          </div>
+      </div>
+
+      <style jsx>{`
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
+    </div>
+  );
 }
 
-body {
-    background: linear-gradient(135deg, #000000, #1a1a1a);
-    color: #ffffff;
-    overflow-x: hidden;
-    line-height: 1.6;
-}
-
-/* Navigation Bar: Sticky with glassmorphism and gold glow on hover */
-#nav {
-    position: fixed;
-    top: 0;
-    width: 100%;
-    background: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(255, 215, 0, 0.3);
-    z-index: 1000;
-    transition: all 0.3s ease;
-}
-
-.nav-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 1rem 2rem;
-}
-
-.logo {
-    font-size: 1.5rem;
-    color: #FFD700;
-}
-
-.nav-links {
-    list-style: none;
-    display: flex;
-    gap: 2rem;
-}
-
-.nav-links a {
-    color: #ffffff;
-    text-decoration: none;
-    transition: color 0.3s ease;
-}
-
-.nav-links a:hover {
-    color: #FFD700;
-    text-shadow: 0 0 10px #FFD700;
-}
-
-/* Hero Section: Full-screen with dark theme, animations, and 3D container */
-#hero {
-    height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    overflow: hidden;
-}
-
-#particle-canvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1;
-}
-
-#threejs-container {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 400px;
-    height: 300px;
-    z-index: 2;
-}
-
-.hero-content {
-    text-align: center;
-    z-index: 3;
-    animation: fadeIn 2s ease-in-out;
-}
-
-.hero-title {
-    font-size: 4rem;
-    color: #FFD700;
-    text-shadow: 0 0 20px #FFD700;
-    margin-bottom: 1rem;
-}
-
-.hero-subtitle {
-    font-size: 1.5rem;
-    color: #00BFFF;
-    text-shadow: 0 0 10px #00BFFF;
-}
-
-/* Fade-in animation for hero */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(50px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* Car Models Section: Grid with 3D tilt hover effects */
-#models {
-    padding: 5rem 2rem;
-    max-width: 1200px;
-    margin: 0 auto;
-    text-align: center;
-}
-
-.models-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
-    margin-top: 2rem;
-}
-
-.model-card {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 215, 0, 0.3);
-    border-radius: 15px;
-    padding: 1.5rem;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-}
-
-.model-card:hover {
-    transform: perspective(1000px) rotateX(10deg) rotateY(10deg);
-    box-shadow: 0 20px 50px rgba(255, 215, 0, 0.5);
-}
-
-.model-card img {
-    width: 100%;
-    border-radius: 10px;
-    margin-bottom: 1rem;
-}
-
-.view-more {
-    background: linear-gradient(45deg, #FFD700, #00BFFF);
-    color: #000;
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: transform 0.3s ease;
-}
-
-.view-more:hover {
-    transform: scale(1.1);
-}
-
-/* Upcoming Cars Section: Carousel with glowing borders */
-#upcoming {
-    padding: 5rem 2rem;
-    max-width: 1200px;
-    margin: 0 auto;
-    text-align: center;
-}
-
-.carousel {
-    display: flex;
-    overflow: hidden;
-    position: relative;
-    margin-top: 2rem;
-}
-
-.carousel-slide {
-    min-width: 100%;
-    transition: transform 0.5s ease;
-}
-
-.upcoming-card {
-    background: rgba(0, 0, 0, 0.8);
-    border: 2px solid #00BFFF;
-    border-radius: 15px;
-    padding: 1.5rem;
-    box-shadow: 0 0 20px #00BFFF;
-    margin: 0 auto;
-    max-width: 400px;
-}
-
-.upcoming-card img {
-    width: 100%;
-    border-radius: 10px;
-    margin-bottom: 1rem;
-}
-
-.carousel-prev, .carousel-next {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background: rgba(0, 0, 0, 0.8);
-    color: #FFD700;
-    border: none;
-    padding: 1rem;
-    cursor: pointer;
-    z-index: 10;
-}
-
-.carousel-prev { left: 10px; }
-.carousel-next { right: 10px; }
-
-/* Luxury Styles Section: Gradient
